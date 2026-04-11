@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urban Flood & Hydrology Engine | OneEarth 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+</head>
+<body>
+
+<!-- ═══ NAVBAR ═══ -->
+<%- include('./includes/navbar') %>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-particles" id="particles"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="pulse-dot"></span>
+      Urban Flood & Hydrology Engine · AI for Climate Action · SDG 13
+    </div>
+
+    <h1 class="hero-title">
+      <span class="title-line line-1">Adapt.</span>
+      <span class="title-line line-2">Protect.</span>
+      <span class="title-line line-3 accent-gradient">Survive.</span>
+    </h1>
+
+    <p class="hero-sub">
+      Enter any location. Get a real-time multi-hazard risk assessment and an 
+      AI-generated, costed adaptation plan — in seconds. No expertise needed.
+    </p>
+
+    <div class="global-stats">
+      <div class="gstat">
+        <span class="gstat-num counter" data-target="1800000000">0</span>
+        <span class="gstat-lbl">People facing flood risk</span>
+      </div>
+      <div class="gstat-div"></div>
+      <div class="gstat">
+        <span class="gstat-num">500K+</span>
+        <span class="gstat-lbl">Heat deaths annually</span>
+      </div>
+      <div class="gstat-div"></div>
+      <div class="gstat">
+        <span class="gstat-num">5</span>
+        <span class="gstat-lbl">Hazards tracked</span>
+      </div>
+      <div class="gstat-div"></div>
+      <div class="gstat">
+        <span class="gstat-num">16×</span>
+        <span class="gstat-lbl">ROI on resilience</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH CARD -->
+  <div class="search-card" id="searchCard">
+    <div class="search-card-header">
+      <span class="search-icon">📍</span>
+      <div>
+        <div class="search-card-title">Analyse your location</div>
+        <div class="search-card-sub">Supports cities, districts, villages worldwide</div>
+      </div>
+    </div>
+    <div class="search-row">
+      <input
+        type="text"
+        id="locationInput"
+        class="search-input"
+        placeholder="e.g. Patna, Bihar · Dhaka · Jakarta · Lagos"
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter') runAnalysis()"
+      >
+      <button class="search-btn" onclick="runAnalysis()" id="searchBtn">
+        <span id="btnText">Analyse →</span>
+        <span id="btnLoader" style="display:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        </span>
+      </button>
+    </div>
+    <div class="quick-locations">
+      <span class="ql-label">Quick:</span>
+      <button class="ql-btn" onclick="quickSearch('Patna, Bihar')">Patna, India</button>
+      <button class="ql-btn" onclick="quickSearch('Dhaka')">Dhaka</button>
+      <button class="ql-btn" onclick="quickSearch('Jakarta')">Jakarta</button>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll to explore</span>
+    <div class="scroll-arrow">↓</div>
+  </div>
+</section>
+
+<!-- ═══ DASHBOARD (populated dynamically) ═══ -->
+<section class="section dashboard-section" id="dashboard">
+  <div class="section-inner">
+
+    <!-- PLACEHOLDER STATE -->
+    <div class="placeholder-state" id="placeholderState">
+      <div class="placeholder-orb">🌏</div>
+      <h2 class="placeholder-title">Enter a location above to begin</h2>
+      <p class="placeholder-sub">Your multi-hazard risk dashboard will appear here, with flood zones, heat islands, drought vulnerability and more — all in one view.</p>
+      <div class="placeholder-features">
+        <div class="pf-item"><span class="pf-icon">🌊</span><span>Flood risk assessment</span></div>
+        <div class="pf-item"><span class="pf-icon">🌡</span><span>Heat island analysis</span></div>
+        <div class="pf-item"><span class="pf-icon">🏜</span><span>Drought vulnerability</span></div>
+        <div class="pf-item"><span class="pf-icon">⛈</span><span>Storm risk index</span></div>
+        <div class="pf-item"><span class="pf-icon">💨</span><span>Air quality score</span></div>
+        <div class="pf-item"><span class="pf-icon">📄</span><span>One-click PDF report</span></div>
+      </div>
+    </div>
+
+    <!-- RESULTS STATE (hidden until analysis) -->
+    <div class="results-state" id="resultsState" style="display:none">
+
+      <!-- Location Header -->
+      <div class="result-header">
+        <div class="result-location">
+          <span class="result-pin">📍</span>
+          <div>
+            <h2 class="result-city" id="resultCity">—</h2>
+            <span class="result-country" id="resultCountry">—</span>
+          </div>
+        </div>
+        <div class="result-meta-pills">
+          <span class="rmeta-pill rmeta-risk">Risk Index: <strong id="riskIndex">—</strong></span>
+          <span class="rmeta-pill rmeta-pop">Pop: <strong id="resultPop">—</strong></span>
+        </div>
+        <button class="download-btn" onclick="downloadReport()">📄 Download PDF Report</button>
+      </div>
+
+      <!-- Hazard Cards -->
+      <div class="hazard-grid" id="hazardGrid">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Map -->
+      <div class="map-wrap">
+        <div class="map-header">
+          <span class="map-title">Interactive hazard overlay map</span>
+          <div class="map-toggles">
+            <button class="map-toggle active" data-layer="flood" onclick="toggleLayer(this)">🔵 Flood zones</button>
+            <button class="map-toggle active" data-layer="heat" onclick="toggleLayer(this)">🔴 Heat islands</button>
+            <button class="map-toggle active" data-layer="drought" onclick="toggleLayer(this)">🟫 Drought</button>
+          </div>
+        </div>
+        <div class="map-area">
+          <svg id="hazardMap" viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+            <rect width="700" height="300" fill="#0a1520"/>
+            <!-- Grid -->
+            <g stroke="rgba(255,255,255,0.04)" stroke-width="0.5">
+              <line x1="0" y1="75" x2="700" y2="75"/><line x1="0" y1="150" x2="700" y2="150"/>
+              <line x1="0" y1="225" x2="700" y2="225"/>
+              <line x1="175" y1="0" x2="175" y2="300"/><line x1="350" y1="0" x2="350" y2="300"/>
+              <line x1="525" y1="0" x2="525" y2="300"/>
+            </g>
+            <!-- River -->
+            <path id="mapRiver" d="M0 155 C100 138 180 165 280 158 C380 151 430 168 550 158 C620 152 670 162 700 155" fill="none" stroke="#1565c0" stroke-width="9" stroke-opacity="0.5"/>
+            <!-- Flood zone -->
+            <ellipse id="floodZone1" cx="310" cy="158" rx="145" ry="58" fill="rgba(21,101,192,0.22)" stroke="#1565c0" stroke-width="0.5" stroke-opacity="0.6"/>
+            <ellipse id="floodZone2" cx="160" cy="155" rx="90" ry="42" fill="rgba(21,101,192,0.16)" stroke="#1565c0" stroke-width="0.5" stroke-opacity="0.5"/>
+            <!-- Heat islands -->
+            <ellipse id="heatIsland1" cx="350" cy="138" rx="62" ry="36" fill="rgba(198,40,40,0.18)" stroke="#c62828" stroke-width="0.5" stroke-opacity="0.5"/>
+            <ellipse id="heatIsland2" cx="210" cy="124" rx="42" ry="26" fill="rgba(198,40,40,0.14)" stroke="#c62828" stroke-width="0.5" stroke-opacity="0.4"/>
+            <!-- Drought zone -->
+            <ellipse id="droughtZone" cx="520" cy="170" rx="70" ry="45" fill="rgba(121,85,72,0.16)" stroke="#795548" stroke-width="0.5" stroke-opacity="0.4"/>
+            <!-- Pin -->
+            <g id="locationPin">
+              <circle cx="350" cy="138" r="9" fill="#00c853" opacity="0.95"/>
+              <circle cx="350" cy="138" r="16" fill="none" stroke="#00c853" stroke-width="1.5" stroke-opacity="0.5"/>
+              <circle cx="350" cy="138" r="25" fill="none" stroke="#00c853" stroke-width="0.5" stroke-opacity="0.25"/>
+              <!-- Ping animation ring -->
+              <circle cx="350" cy="138" r="9" fill="none" stroke="#00c853" stroke-width="1" stroke-opacity="0.6">
+                <animate attributeName="r" from="9" to="32" dur="2s" repeatCount="indefinite"/>
+                <animate attributeName="stroke-opacity" from="0.6" to="0" dur="2s" repeatCount="indefinite"/>
+              </circle>
+            </g>
+            <!-- City label -->
+            <rect id="cityLabelBg" x="364" y="120" width="90" height="22" rx="4" fill="rgba(0,200,83,0.14)" stroke="rgba(0,200,83,0.4)" stroke-width="0.5"/>
+            <text id="cityLabel" x="409" y="135" fill="#00c853" font-size="11" font-family="Syne,sans-serif" font-weight="600" text-anchor="middle">Patna, Bihar</text>
+            <!-- Legend -->
+            <rect x="14" y="268" width="10" height="10" rx="2" fill="rgba(21,101,192,0.6)"/>
+            <text x="28" y="278" fill="rgba(255,255,255,0.45)" font-size="10" font-family="DM Sans,sans-serif">Flood zone</text>
+            <rect x="94" y="268" width="10" height="10" rx="2" fill="rgba(198,40,40,0.6)"/>
+            <text x="108" y="278" fill="rgba(255,255,255,0.45)" font-size="10" font-family="DM Sans,sans-serif">Heat island</text>
+            <rect x="178" y="268" width="10" height="10" rx="2" fill="rgba(121,85,72,0.6)"/>
+            <text x="192" y="278" fill="rgba(255,255,255,0.45)" font-size="10" font-family="DM Sans,sans-serif">Drought</text>
+            <circle cx="258" cy="273" r="5" fill="#00c853" opacity="0.8"/>
+            <text x="267" y="278" fill="rgba(255,255,255,0.45)" font-size="10" font-family="DM Sans,sans-serif">Your location</text>
+          </svg>
+        </div>
+      </div>
+
+    </div><!-- /results-state -->
+  </div>
+</section>
+
+<!-- ═══ AI PLAN SECTION ═══ -->
+<section class="section plan-section" id="ai-plan">
+  <div class="section-inner">
+    <div class="section-tag">AI-Generated Adaptation Plan</div>
+    <h2 class="section-title">Your personalised resilience roadmap</h2>
+    <p class="section-sub">Costed actions ranked by urgency and impact. Adjust the budget slider to reprioritise in real time.</p>
+
+    <!-- Budget Simulator -->
+    <div class="budget-card">
+      <div class="budget-top">
+        <div>
+          <div class="budget-label">Available budget for adaptation</div>
+          <div class="budget-val" id="budgetDisplay">$200,000</div>
+        </div>
+        <div class="budget-range-wrap">
+          <input type="range" min="0" max="1000" step="10" value="200" id="budgetSlider" class="budget-slider" oninput="updateBudget(this.value)">
+          <div class="budget-range-labels">
+            <span>$0</span><span>$250K</span><span>$500K</span><span>$750K</span><span>$1M</span>
+          </div>
+        </div>
+      </div>
+      <div class="impact-row">
+        <div class="impact-box">
+          <div class="impact-num" id="avoiderDmg">$3.2M</div>
+          <div class="impact-lbl">Avoided damages over 10 years</div>
+        </div>
+        <div class="impact-box">
+          <div class="impact-num" id="roiDisplay">16:1</div>
+          <div class="impact-lbl">Return on investment ratio</div>
+        </div>
+        <div class="impact-box">
+          <div class="impact-num" id="actionsUnlocked">3</div>
+          <div class="impact-lbl">Adaptation actions unlocked</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan Cards -->
+    <div class="plan-list" id="planList">
+      <div class="plan-placeholder">
+        <p>🔍 Enter a location above to generate your AI adaptation plan.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ IMPACT / STORY ═══ -->
+<section class="section impact-section" id="impact">
+  <div class="section-inner impact-grid">
+    <div class="impact-story">
+      <div class="section-tag">Why this matters</div>
+      <h2 class="section-title">Climate shocks erase decades of development in hours.</h2>
+      <p class="impact-p">In Bihar alone, floods in 2024 displaced <strong>4 million people</strong> and caused <strong>$1.2B in economic losses</strong> — yet only $80M was spent on preparedness the same year.</p>
+      <p class="impact-p">Urban Flood & Hydrology Engine bridges the gap between complex climate science and the local planner who has 20 minutes and $100,000 to make a decision that protects 300,000 people.</p>
+      <p class="impact-p">No GIS expertise. No climate science degree. Just a location and a budget — and you get a science-backed, actionable plan ready for your next stakeholder meeting.</p>
+      <button class="btn-primary" onclick="scrollToSearch()">Generate your plan →</button>
+    </div>
+    <div class="impact-metrics">
+      <div class="im-card im-danger">
+        <span class="im-icon">🌊</span>
+        <div class="im-body">
+          <div class="im-num">4 million displaced</div>
+          <div class="im-context">Bihar floods, 2024 · single event</div>
+        </div>
+      </div>
+      <div class="im-card im-warn">
+        <span class="im-icon">💸</span>
+        <div class="im-body">
+          <div class="im-num">$1.2B in losses</div>
+          <div class="im-context">vs $80M preparedness spend that year</div>
+        </div>
+      </div>
+      <div class="im-card im-safe">
+        <span class="im-icon">📈</span>
+        <div class="im-body">
+          <div class="im-num">$16 saved per $1 spent</div>
+          <div class="im-context">Global average ROI on climate adaptation</div>
+        </div>
+      </div>
+      <div class="im-card im-gold">
+        <span class="im-icon">⚡</span>
+        <div class="im-body">
+          <div class="im-num">Under 2 seconds</div>
+          <div class="im-context">From location input to full risk plan</div>
+        </div>
+      </div>
+      <div class="im-card im-blue">
+        <span class="im-icon">🌍</span>
+        <div class="im-body">
+          <div class="im-num">Any location on Earth</div>
+          <div class="im-context">Village, district, megacity — all supported</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SDG ALIGNMENT ═══ -->
+<section class="section sdg-section" id="sdg">
+  <div class="section-inner">
+    <div class="section-tag">Global Goals Alignment</div>
+    <h2 class="section-title">Built for the world's most urgent agenda</h2>
+    <p class="section-sub">Urban Flood & Hydrology Engine directly addresses four UN Sustainable Development Goals.</p>
+    <div class="sdg-grid">
+      <div class="sdg-card sdg-c13">
+        <div class="sdg-num">13</div>
+        <div class="sdg-name">Climate Action</div>
+        <div class="sdg-desc">Core mission: multi-hazard risk assessment + costed adaptation planning for any location.</div>
+        <div class="sdg-targets">Targets: 13.1 · 13.3 · 13.b</div>
+      </div>
+      <div class="sdg-card sdg-c11">
+        <div class="sdg-num">11</div>
+        <div class="sdg-name">Sustainable Cities</div>
+        <div class="sdg-desc">Urban resilience planning for flood zones, heat islands, and storm vulnerability.</div>
+        <div class="sdg-targets">Target: 11.5 · 11.b</div>
+      </div>
+      <div class="sdg-card sdg-c9">
+        <div class="sdg-num">9</div>
+        <div class="sdg-name">Resilient Infrastructure</div>
+        <div class="sdg-desc">Engineering-grade recommendations for drainage, flood barriers, and early-warning systems.</div>
+        <div class="sdg-targets">Target: 9.1 · 9.a</div>
+      </div>
+      <div class="sdg-card sdg-c1">
+        <div class="sdg-num">1</div>
+        <div class="sdg-name">No Poverty</div>
+        <div class="sdg-desc">Protects livelihoods of the most vulnerable communities from climate shocks.</div>
+        <div class="sdg-targets">Target: 1.5</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ROADMAP ═══ -->
+<section class="section roadmap-section">
+  <div class="section-inner">
+    <div class="section-tag">Future Roadmap</div>
+    <h2 class="section-title">What comes next</h2>
+    <div class="roadmap-timeline">
+      <div class="rt-item rt-now">
+        <div class="rt-dot"></div>
+        <div class="rt-card">
+          <span class="rt-phase">Now · Prototype</span>
+          <h3>Rule-based AI + mock data</h3>
+          <p>Working web prototype with 3 cities, budget simulator, interactive maps, PDF report.</p>
+        </div>
+      </div>
+      <div class="rt-item">
+        <div class="rt-dot"></div>
+        <div class="rt-card">
+          <span class="rt-phase">Month 1</span>
+          <h3>Real-time data APIs</h3>
+          <p>Integrate Climate Data Store, Google Earth Engine, NASA POWER for global live data.</p>
+        </div>
+      </div>
+      <div class="rt-item">
+        <div class="rt-dot"></div>
+        <div class="rt-card">
+          <span class="rt-phase">Month 3</span>
+          <h3>Community reporting</h3>
+          <p>Users submit on-ground action photos; crowdsourced local heatmaps and updates.</p>
+        </div>
+      </div>
+      <div class="rt-item">
+        <div class="rt-dot"></div>
+        <div class="rt-card">
+          <span class="rt-phase">Month 6</span>
+          <h3>Mobile app + offline mode</h3>
+          <p>Works in low-connectivity regions. Downloadable hazard data for field use.</p>
+        </div>
+      </div>
+      <div class="rt-item">
+        <div class="rt-dot"></div>
+        <div class="rt-card">
+          <span class="rt-phase">Month 12</span>
+          <h3>Fine-tuned AI model</h3>
+          <p>AI trained on 10,000+ real adaptation case studies for hyper-local recommendations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA BAND ═══ -->
+<section class="cta-band">
+  <div class="cta-inner">
+    <h2>Ready to protect your community?</h2>
+    <p>Enter any location. Get your free resilience plan in under 2 seconds.</p>
+    <button class="btn-primary btn-lg" onclick="scrollToSearch()">Start your analysis →</button>
+  </div>
+</section>
+
+<%- include('./includes/footer') %>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

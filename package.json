@@ -1,0 +1,19 @@
+{
+  "name": "climate-resilience-copilot",
+  "version": "1.0.0",
+  "description": "AI-Powered Multi-Hazard Adaptation Planner for Vulnerable Communities",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ejs": "^3.1.9"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "author": "ClimateResilience Copilot Team",
+  "license": "MIT"
+}

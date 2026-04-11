@@ -1,0 +1,27 @@
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="/">
+      <div class="logo-orb">🌍</div>
+      <span class="logo-text">Urban Flood & <span class="accent">Hydrology</span> Engine</span>
+    </a>
+    <div class="nav-links">
+      <a href="#dashboard" class="nav-link">Dashboard</a>
+      <a href="#ai-plan" class="nav-link">AI Plan</a>
+      <a href="#impact" class="nav-link">Impact</a>
+      <a href="#sdg" class="nav-link">SDGs</a>
+    </div>
+    <div class="nav-right">
+      <span class="live-badge"><span class="pulse-dot"></span>Live</span>
+      <button class="nav-cta" onclick="scrollToSearch()">Analyse Location ↗</button>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#dashboard" onclick="toggleMenu()">Dashboard</a>
+    <a href="#ai-plan" onclick="toggleMenu()">AI Plan</a>
+    <a href="#impact" onclick="toggleMenu()">Impact</a>
+    <a href="#sdg" onclick="toggleMenu()">SDGs</a>
+  </div>
+</nav>
