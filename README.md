@@ -25,10 +25,10 @@ Urban flooding is one of the most overlooked yet devastating challenges in moder
 
 Cities today face:
 
-- 🌧️ Unpredictable rainfall patterns driven by climate change
-- 🏙️ Increased concrete surfaces reducing natural water absorption
-- 🚧 Inefficient and aging drainage infrastructure
-- ⏱️ Delayed, reactive responses to flooding events
+-  Unpredictable rainfall patterns driven by climate change
+-  Increased concrete surfaces reducing natural water absorption
+-  Inefficient and aging drainage infrastructure
+-  Delayed, reactive responses to flooding events
 
 **The result:** Traffic paralysis, economic losses, health hazards, and poor resource allocation.
 
